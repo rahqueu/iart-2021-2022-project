@@ -92,6 +92,7 @@ class Board:
 
     # TODO: outros metodos da classe
 
+#wtf
 
 class Takuzu(Problem):
 
