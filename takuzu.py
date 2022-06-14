@@ -6,6 +6,7 @@
 # 99314 Raquel Cardoso
 # 99287 Miguel Eleutério
 
+from re import I
 import sys
 from search import (
     Problem,
@@ -39,6 +40,9 @@ class Board:
         self.size = size
         self.board = board
 
+    def get_size(self):
+        return self.size;
+
     def get_number(self, row: int, col: int):
         """Devolve o valor na respetiva posição do tabuleiro."""
         return self.board[row][col]
@@ -50,7 +54,6 @@ class Board:
         """Devolve os valores imediatamente abaixo e acima,
         respectivamente."""
         return (self.board[row - 1][col] if row != 0 else None, self.board[row + 1][col] if row != (self.size - 1) else None)
-        
 
     def adjacent_horizontal_numbers(self, row: int, col: int):
         """Devolve os valores imediatamente à esquerda e à direita,
@@ -99,8 +102,8 @@ class Takuzu(Problem):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
         actions = []
-        for i in range(n):
-            for j in range(n):
+        for i in range(self.board.get_size()):
+            for j in range(self.board.get_size()):
                 if self.board.get_number(i, j) == 2:
                     actions += [i, j, 0]
                     actions += [i, j, 1]
@@ -112,40 +115,50 @@ class Takuzu(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        available_actions = self.actions(self, state)
-        if action in available_actions:
-            self.board.change_number(action[0], action[1], action[2])
+        self.board.change_number(action[0], action[1], action[2])
         return self.board
+
+    
 
     def goal_test(self, state: TakuzuState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas com uma sequência de números adjacentes."""
-        
-        #verificar q nao ha 2 no tabuleiro, q nao há diferença maior q 1
-        # q nao linhas e colunas iguais e q nao ha 3 numeros iguais seguidos horziontalmente ou verticalmente
+        # nao ha linhas e colunas iguais 
+        # nao ha 3 numeros iguais seguidos horizontalmente ou verticalmente
+
+        #verificar q nao ha 2 no tabuleiro,
+        # nao há diferença maior q 1
+
+        board = self.board;
+        for i in range(board.get_size()):
+            count_zero_col = 0
+            count_one_col = 0
+            count_zero_row = 0
+            count_one_row = 0
+            col = board.get_col(i)
+            row = board.get_row(i)
+            for j in range(board.get_size()):
+                if board.get_number(i, j) == 2:
+                    return False
+                if col[j] == 1:
+                    count_one_col += 1
+                else: count_zero_col += 1
+                if row[j] == 1:
+                    count_one_row += 1
+                else: count_zero_row += 1
+
+            if count_one_col > count_zero_col+1 or count_zero_col > count_one_col+1 or\
+                count_one_row > count_zero_row+1 or count_zero_row > count_one_row+1:
+                return False
+            count_zero_col = 0
+            count_one_col = 0
+            count_zero_row = 0
+            count_one_row = 0
+                
+                
 
         #faz a função banger miguel !!!!!!!!!!!!!!!!!!!
-        '''
-        count_zero = 0
-        count_one = 0
-        rows = []
-        cols = []
-
-        for i in range(self.board.size):
-            row = self.board.get_row(i)
-            for k in range(self.board.size):
-                if self.board.get_number(i, k) == 0:
-                    count_zero += 1
-            
-            
-            #ver se há linhas iguais
-            if len(rows) == 0:
-                rows += row
-            else:
-                for j in range(len(rows)):
-                    if row == rows[j]:
-                        return False'''
         
 
 
@@ -158,9 +171,16 @@ class Takuzu(Problem):
 
 
 if __name__ == "__main__":
-    # TODO:
-    # Ler o ficheiro de input de sys.argv[1],
-    # Usar uma técnica de procura para resolver a instância,
-    # Retirar a solução a partir do nó resultante,
-    # Imprimir para o standard output no formato indicado.
-    pass
+    # Ler tabuleiro do ficheiro 'i1.txt' (Figura 1):
+    # $ python3 takuzu < i1.txt
+    board = Board.parse_instance_from_stdin()
+
+    # Criar uma instância de Takuzu:
+    problem = Takuzu(board)
+
+    # Obter o nó solução usando a procura em profundidade:
+    goal_node = depth_first_tree_search(problem)
+
+    # Verificar se foi atingida a solução
+    print("Is goal?", problem.goal_test(goal_node.state))
+    print("Solution:\n", goal_node.state.board, sep="")
