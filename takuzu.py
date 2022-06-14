@@ -43,10 +43,16 @@ class Board:
 
     def __str__(self) -> str:
         to_print = ""
-        for i in range(self.size):
-            col = self.get_col(i)
-            for j in range(self.size):
-                to_print += str(col[j]) + "\t"
+        size = self.get_size()
+        for i in range(size):
+            line = self.get_row(i)
+            for j in range(size):
+                if j != size-1:
+                    to_print += str(line[j]) + "\t"
+                else:
+                    to_print += str(line[j]) + "\n"
+
+        return to_print
 
     def get_size(self):
         return self.size
