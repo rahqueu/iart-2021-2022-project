@@ -17,6 +17,7 @@ from search import (
     greedy_search,
     recursive_best_first_search,
 )
+from utils import vector_add
 
 
 class TakuzuState:
@@ -41,7 +42,7 @@ class Board:
         self.board = board
 
     def get_size(self):
-        return self.size;
+        return self.size
 
     def get_number(self, row: int, col: int):
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -118,8 +119,6 @@ class Takuzu(Problem):
         self.board.change_number(action[0], action[1], action[2])
         return self.board
 
-    
-
     def goal_test(self, state: TakuzuState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
@@ -130,37 +129,29 @@ class Takuzu(Problem):
         #verificar q nao ha 2 no tabuleiro,
         # nao há diferença maior q 1
 
-        board = self.board;
-        for i in range(board.get_size()):
-            count_zero_col = 0
-            count_one_col = 0
-            count_zero_row = 0
-            count_one_row = 0
-            col = board.get_col(i)
-            row = board.get_row(i)
-            for j in range(board.get_size()):
-                if board.get_number(i, j) == 2:
+        board = self.board
+        size = board.get_size()
+        one_count = 0
+        zero_count = 0
+        for i in range(size):
+            line1 = board.get_row(i)
+            col1 = board.get_col(i)
+            for j in range(i, size):
+                line2 = board.get_row(j)
+                col2 = board.get_col(j)
+                if line1 == line2 or col1 == col2:                
                     return False
-                if col[j] == 1:
-                    count_one_col += 1
-                else: count_zero_col += 1
-                if row[j] == 1:
-                    count_one_row += 1
-                else: count_zero_row += 1
-
-            if count_one_col > count_zero_col+1 or count_zero_col > count_one_col+1 or\
-                count_one_row > count_zero_row+1 or count_zero_row > count_one_row+1:
+            if (1,1,1) in line1 or (0,0,0) in line1 or 2 in line1:
                 return False
-            count_zero_col = 0
-            count_one_col = 0
-            count_zero_row = 0
-            count_one_row = 0
-                
-                
+            if (1,1,1) in col1 or (0,0,0) in col1 or 2 in col1:
+                return False
+            one_count += line1.count(1)
+            zero_count += line1.count(0)
 
-        #faz a função banger miguel !!!!!!!!!!!!!!!!!!!
-        
+        if abs(one_count - zero_count) > 1:
+            return False
 
+        return True
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
