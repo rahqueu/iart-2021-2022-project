@@ -41,6 +41,13 @@ class Board:
         self.size = size
         self.board = board
 
+    def __str__(self) -> str:
+        to_print = ""
+        for i in range(self.size):
+            col = self.get_col(i)
+            for j in range(self.size):
+                to_print += str(col[j]) + "\t"
+
     def get_size(self):
         return self.size
 
@@ -107,6 +114,8 @@ class Takuzu(Problem):
         for i in range(self.board.get_size()):
             for j in range(self.board.get_size()):
                 if self.board.get_number(i, j) == 2:
+                    # testar c 1/0 e ver se cumpre todas: se sim -> meter se não -> meter o outro
+                    # se n for possivel concluir se cumpre em alguma, testar a prox, se tbm nao -> meter ambas
                     actions += [i, j, 0]
                     actions += [i, j, 1]
                     
