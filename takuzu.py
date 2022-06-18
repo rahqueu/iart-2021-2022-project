@@ -49,6 +49,8 @@ class Board:
             for j in range(size):
                 if j != size-1:
                     to_print += str(line[j]) + "\t"
+                elif i == size-1:
+                    to_print += str(line[j])
                 else:
                     to_print += str(line[j]) + "\n"
 
@@ -80,6 +82,16 @@ class Board:
     def get_col(self, col: int):
         return (line[col] for line in self.board)
 
+    def get_empty_positions(self):
+
+        result = ()
+
+        for i in range(self.size):
+            for j in range(self.size):
+                if self.get_number(i, j) == 2:
+                    result += (i, j, 2)
+        
+        return result
 
     @staticmethod
     def parse_instance_from_stdin():
@@ -116,16 +128,20 @@ class Takuzu(Problem):
     def actions(self, state: TakuzuState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        actions = []
-        for i in range(self.board.get_size()):
-            for j in range(self.board.get_size()):
-                if self.board.get_number(i, j) == 2:
-                    # testar c 1/0 e ver se cumpre todas: se sim -> meter se não -> meter o outro
-                    # se n for possivel concluir se cumpre em alguma, testar a prox, se tbm nao -> meter ambas
-                    actions += [i, j, 0]
-                    actions += [i, j, 1]
-                    
-        return actions
+        empty_positions = self.board.get_empty_positions()
+        result = ()
+
+        for position in empty_positions:
+            horizontals = self.board.adjacent_horizontal_numbers(position[0], position[1])
+            verticals = self.board.adjacent_horizontal_numbers(position[0], position[1])
+            if horizontals[0] == horizontals[1] and horizontals[0] != None:
+                result += (position[0], position[1], abs(position[0] - 1))
+            elif verticals[0] == verticals[1] and verticals[0] != None:
+                result += (position[0], position[1], abs(position[0] - 1))
+            else:
+                result += (position[0], position[1], 2)
+
+        return result
 
     def result(self, state: TakuzuState, action):
         """Retorna o estado resultante de executar a 'action' sobre
@@ -152,7 +168,7 @@ class Takuzu(Problem):
         for i in range(size):
             line1 = board.get_row(i)
             col1 = board.get_col(i)
-            for j in range(i, size):
+            for j in range(i + 1, size):
                 line2 = board.get_row(j)
                 col2 = board.get_col(j)
                 if line1 == line2 or col1 == col2:                
