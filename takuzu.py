@@ -26,8 +26,8 @@ from utils import vector_add
 class Board:
     """Representação interna de um tabuleiro de Takuzu."""
 
-    def __init__(self, n, given_board):
-        self.size = n
+    def __init__(self, size, given_board):
+        self.size = size
         self.board = given_board
 
     def __str__(self) -> str:
@@ -231,8 +231,6 @@ class Takuzu(Problem):
         prev_verticals = given_state.get_vertical_values(position[0], position[1], 0)
         adjacent_verticals = given_state.adjacent_vertical_numbers(position[0], position[1])
         adjacent_horizontals = given_state.adjacent_horizontal_numbers(position[0], position[1])
-
-        equals0, equals1 = False, False
         row = given_state.get_row(position[0])
         col = given_state.get_col(position[1])
 
@@ -270,29 +268,39 @@ class Takuzu(Problem):
             new_row1_0, new_row1_1 = row.copy(), row.copy()
             new_row1_0[position[1]], new_row1_1[position[1]] = 0, 1
             if given_state.exists(new_row1_0, 0):
-                equals0 = True
+                put.discard(0)
             if given_state.exists(new_row1_1, 0):
-                equals1 = True
+                put.discard(1)
+            one_count = new_row1_0.count(1)
+            zero_count = int(given_state.get_size()) - one_count
+            if abs(one_count - zero_count) > 1:
+                put.discard(0)
+            one_count = new_row1_1.count(1)
+            zero_count = int(given_state.get_size()) - one_count
+            if abs(one_count - zero_count) > 1:
+                put.discard(1)
 
         if given_state.get_col(position[1]).count(2) == 1:
             new_col1_0, new_col1_1 = col.copy(), col.copy()
             new_col1_0[position[0]], new_col1_1[position[0]] = 0, 1
             if given_state.exists(new_col1_0, 1):
-                equals0 = True
+                put.discard(0)
             if given_state.exists(new_col1_1, 1):
-                equals1 = True
-
-        if equals0:
-            put.discard(0)
-
-        if equals1:
-            put.discard(1)
+                put.discard(1)
+            one_count = new_col1_0.count(1)
+            zero_count = int(given_state.get_size()) - one_count
+            if abs(one_count - zero_count) > 1:
+                put.discard(0)
+            one_count = new_col1_1.count(1)
+            zero_count = int(given_state.get_size()) - one_count
+            if abs(one_count - zero_count) > 1:
+                put.discard(1)
 
         if 1 in put:
             result += ((position[0], position[1], 1),)
         if 0 in put:
             result += ((position[0], position[1], 0),)
-            
+
         return result
 
     def result(self, state: TakuzuState, action):
@@ -313,12 +321,20 @@ class Takuzu(Problem):
 
         size = given_state.get_size()
 
-        for i in range(size):
+        for i in range(size): 
             line1 = given_state.get_row(i)
             col1 = given_state.get_col(i)
             if (1,1,1) in line1 or (0,0,0) in line1 or 2 in line1:
                 return False
             if (1,1,1) in col1 or (0,0,0) in col1 or 2 in col1:
+                return False
+            one_count = given_state.get_row(i).count(1)
+            zero_count = int(given_state.get_size()) - one_count
+            if abs(one_count - zero_count) > 1:
+                return False
+            one_count = given_state.get_col(i).count(1)
+            zero_count = int(given_state.get_size()) - one_count
+            if abs(one_count - zero_count) > 1:
                 return False
             for j in range(i + 1, size):
                 line2 = given_state.get_row(j)
@@ -344,4 +360,4 @@ if __name__ == "__main__":
     # Obter o nó solução usando a procura em profundidade:
     goal_node = depth_first_tree_search(problem)
 
-    print(goal_node.state.get_state(), end = "")
+    print(goal_node.state.get_state())
