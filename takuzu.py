@@ -212,11 +212,13 @@ class Takuzu(Problem):
 
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
+        
         self.initial = TakuzuState(board)
 
     def actions(self, given_state: TakuzuState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
+
         position = given_state.get_state().get_first_empty_position()
         result = tuple()
         put = {0, 1}
@@ -228,6 +230,10 @@ class Takuzu(Problem):
         adjacent_verticals = given_state.adjacent_vertical_numbers(position[0], position[1])
         adjacent_horizontals = given_state.adjacent_horizontal_numbers(position[0], position[1])
 
+        equals0, equals1 = False, False
+        row = given_state.get_row(position[0])
+        col = given_state.get_col(position[1])
+        
         def same_numbers(n1, n2):
             numbers = [n1, n2]
             if n1 == n2 and 2 not in numbers and None not in numbers:
@@ -257,10 +263,6 @@ class Takuzu(Problem):
         if same_numbers(prev_verticals[0], prev_verticals[1]):
         #if prev_verticals[0] == prev_verticals[1] and 2 not in prev_verticals and None not in prev_verticals:
             put.discard(prev_verticals[0])
-
-        equals0, equals1 = False, False
-        row = given_state.get_row(position[0])
-        col = given_state.get_col(position[1])
 
         if given_state.get_row(position[0]).count(2) == 1:
             new_row1_0, new_row1_1 = row.copy(), row.copy()
