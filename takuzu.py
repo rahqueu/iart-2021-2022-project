@@ -38,6 +38,8 @@ class Board:
             for j in range(size):
                 if j != size-1:
                     to_print += str(line[j]) + "\t"
+                elif i == size-1:
+                    to_print += str(line[j])
                 else:
                     to_print += str(line[j]) + "\n"
 
@@ -233,7 +235,7 @@ class Takuzu(Problem):
         equals0, equals1 = False, False
         row = given_state.get_row(position[0])
         col = given_state.get_col(position[1])
-        
+
         def same_numbers(n1, n2):
             numbers = [n1, n2]
             if n1 == n2 and 2 not in numbers and None not in numbers:
