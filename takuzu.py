@@ -227,14 +227,7 @@ class Takuzu(Problem):
         prev_verticals = given_state.get_vertical_values(position[0], position[1], 0)
         adjacent_verticals = given_state.adjacent_vertical_numbers(position[0], position[1])
         adjacent_horizontals = given_state.adjacent_horizontal_numbers(position[0], position[1])
-
-        print("Adj V:", adjacent_verticals)
-        print("Adj H:", adjacent_horizontals)
-        print("Next V:", next_verticals)
-        print("Next H:", next_horizontals)
-        print("Prev V:", prev_verticals)
-        print("Prev H:", prev_horizontals)
-
+        
         if adjacent_verticals[0] == adjacent_verticals[1] and 2 not in adjacent_verticals and None not in adjacent_verticals:
             put.discard(adjacent_verticals[0])
         if adjacent_horizontals[0] == adjacent_horizontals[1] and 2 not in adjacent_horizontals and None not in adjacent_horizontals:
@@ -243,7 +236,7 @@ class Takuzu(Problem):
             put.discard(next_horizontals[0])
         if prev_horizontals[0] == prev_horizontals[1] and 2 not in prev_horizontals and None not in prev_horizontals:
             put.discard(prev_horizontals[0])
-        if next_verticals[0] == next_verticals[1] and 2 not in next_verticals and None in next_verticals:
+        if next_verticals[0] == next_verticals[1] and 2 not in next_verticals and None not in next_verticals:
             put.discard(next_verticals[0])
         if prev_verticals[0] == prev_verticals[1] and 2 not in prev_verticals and None not in prev_verticals:
             put.discard(prev_verticals[0])
@@ -255,12 +248,12 @@ class Takuzu(Problem):
             new_row1_0[position[1]], new_row1_1[position[1]] = 0, 1
             if given_state.exists(new_row1_0, 0):
                 equals0 = True
-            if given_state.exists(new_row1_1, 1):
+            if given_state.exists(new_row1_1, 0):
                 equals1 = True
         if given_state.get_col(position[1]).count(2) == 1:
             new_col1_0, new_col1_1 = col.copy(), col.copy()
             new_col1_0[position[0]], new_col1_1[position[0]] = 0, 1
-            if given_state.exists(new_col1_0, 0):
+            if given_state.exists(new_col1_0, 1):
                 equals0 = True
             if given_state.exists(new_col1_1, 1):
                 equals1 = True
@@ -272,7 +265,6 @@ class Takuzu(Problem):
             result += ((position[0], position[1], 1),)
         if 0 in put:
             result += ((position[0], position[1], 0),)
-        print(result, '\n')
         return result
 
     def result(self, state: TakuzuState, action):
@@ -296,7 +288,6 @@ class Takuzu(Problem):
         # nao há diferença maior q 1
 
         size = given_state.get_size()
-        print(given_state.get_state(), end = "")
 
         for i in range(size):
             line1 = given_state.get_row(i)
@@ -308,10 +299,8 @@ class Takuzu(Problem):
             for j in range(i + 1, size):
                 line2 = given_state.get_row(j)
                 col2 = given_state.get_col(j)
-                if line1 == line2 or col1 == col2:                
+                if line1 == line2 or col1 == col2:  
                     return False
-
-        print("Hey")
 
         return True
 
