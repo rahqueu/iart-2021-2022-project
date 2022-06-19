@@ -8,6 +8,7 @@
 
 from re import I
 import sys
+from turtle import pos
 from search import (
     Problem,
     Node,
@@ -69,12 +70,14 @@ class Board:
     def adjacent_vertical_numbers(self, row: int, col: int):
         """Devolve os valores imediatamente abaixo e acima,
         respectivamente."""
-        return (self.board[row - 1][col] if row != 0 else None, self.board[row + 1][col] if row != (self.size - 1) else None)
+        return (self.board[row - 1][col] if self.size > row > 0 else None, 
+        self.board[row + 1][col] if 0 <= row < (self.size - 1) else None)
 
     def adjacent_horizontal_numbers(self, row: int, col: int):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        return (self.board[row][col - 1] if col != 0 else None, self.board[row][col + 1] if col != (self.size - 1) else None)
+        return (self.board[row][col - 1] if self.size > col > 0 else None, 
+        self.board[row][col + 1] if 0 <= col < (self.size - 1) else None)
 
     def get_row(self, row: int):
         return self.board[row]
@@ -82,16 +85,33 @@ class Board:
     def get_col(self, col: int):
         return (line[col] for line in self.board)
 
-    def get_empty_positions(self):
-
-        result = ()
+    def get_first_empty_positions(self):
 
         for i in range(self.size):
             for j in range(self.size):
                 if self.get_number(i, j) == 2:
-                    result += (i, j, 2)
-        
-        return result
+                    return (i, j, 2)
+        return None
+
+    def get_horizontal_values(self, row: int, col: int, identifier: int):
+        """Identifier:
+        1 = Next 2 values; 0 = Previous 2 values; Returns None if non-existant"""
+        if identifier == 1:
+            return (self.board[row][col + 1] if 0 <= col < (self.size - 1) else None, 
+            self.board[row][col + 2] if 0 <= col < (self.size - 2) else None)
+        else:
+            return (self.board[row][col - 1] if self.size > col > 0 else None, 
+            self.board[row][col - 2] if self.size > col > 1 else None)
+
+    def get_vertical_values(self, row: int, col: int, identifier: int):
+        """Identifier:
+        1 = Next 2 values; 0 = Previous 2 values; Returns None if non-existant"""
+        if identifier == 1:
+            return (self.board[row + 1][col] if 0 <= row < (self.size - 1) else None, 
+            self.board[row + 2][col] if 0 <= row < (self.size - 2) else None)
+        else:
+            return (self.board[row - 1][col] if self.size > row > 0 else None, 
+            self.board[row - 2][col] if self.size > row > 1 else None)
 
     @staticmethod
     def parse_instance_from_stdin():
@@ -128,18 +148,29 @@ class Takuzu(Problem):
     def actions(self, state: TakuzuState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        empty_positions = self.board.get_empty_positions()
+        position = self.board.get_first_empty_position()
         result = ()
 
-        for position in empty_positions:
-            horizontals = self.board.adjacent_horizontal_numbers(position[0], position[1])
-            verticals = self.board.adjacent_horizontal_numbers(position[0], position[1])
-            if horizontals[0] == horizontals[1] and horizontals[0] != None:
-                result += (position[0], position[1], abs(position[0] - 1))
-            elif verticals[0] == verticals[1] and verticals[0] != None:
-                result += (position[0], position[1], abs(position[0] - 1))
-            else:
-                result += (position[0], position[1], 2)
+        next_horizontals = self.board.get_horizontal_values(position[0], position[1], 1)
+        prev_horizontals = self.board.get_horizontal_values(position[0], position[1], 0)
+        next_verticals = self.board.get_vertical_values(position[0], position[1], 1)
+        prev_verticals = self.board.get_vertical_values(position[0], position[1], 0)
+
+        if next_horizontals[0] == prev_horizontals[0] != None:
+            result += (position[0], position[1], abs(next_horizontals[0] - 1))
+        elif next_verticals[0] == prev_verticals[0] != None:
+            result += (position[0], position[1], abs(next_verticals[0] - 1))
+        elif next_horizontals[0] == next_horizontals[1] != None:
+            result += (position[0], position[1], abs(next_horizontals[0] - 1))
+        elif prev_horizontals[0] == prev_horizontals[1] != None:
+            result += (position[0], position[1], abs(prev_horizontals[0] - 1))
+        elif next_verticals[0] == next_verticals[1] != None:
+            result += (position[0], position[1], abs(next_verticals[0] - 1))
+        elif prev_verticals[0] == prev_verticals[1] != None:
+            result += (position[0], position[1], abs(prev_verticals[0] - 1))
+        else:
+            result += (position[0], position[1], 0)
+            result += (position[0], position[1], 1)
 
         return result
 
@@ -168,15 +199,15 @@ class Takuzu(Problem):
         for i in range(size):
             line1 = board.get_row(i)
             col1 = board.get_col(i)
+            if (1,1,1) in line1 or (0,0,0) in line1 or 2 in line1:
+                return False
+            if (1,1,1) in col1 or (0,0,0) in col1 or 2 in col1:
+                return False
             for j in range(i + 1, size):
                 line2 = board.get_row(j)
                 col2 = board.get_col(j)
                 if line1 == line2 or col1 == col2:                
                     return False
-            if (1,1,1) in line1 or (0,0,0) in line1 or 2 in line1:
-                return False
-            if (1,1,1) in col1 or (0,0,0) in col1 or 2 in col1:
-                return False
             one_count += line1.count(1)
             zero_count += line1.count(0)
 
