@@ -38,6 +38,8 @@ class Board:
             for j in range(size):
                 if j != size-1:
                     to_print += str(line[j]) + "\t"
+                elif i == size-1:
+                    to_print += str(line[j])
                 else:
                     to_print += str(line[j]) + "\n"
 
