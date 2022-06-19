@@ -227,22 +227,41 @@ class Takuzu(Problem):
         prev_verticals = given_state.get_vertical_values(position[0], position[1], 0)
         adjacent_verticals = given_state.adjacent_vertical_numbers(position[0], position[1])
         adjacent_horizontals = given_state.adjacent_horizontal_numbers(position[0], position[1])
+
+        def same_numbers(n1, n2):
+            numbers = [n1, n2]
+            if n1 == n2 and 2 not in numbers and None not in numbers:
+                return True
+            return False
         
-        if adjacent_verticals[0] == adjacent_verticals[1] and 2 not in adjacent_verticals and None not in adjacent_verticals:
+        if same_numbers(adjacent_verticals[0], adjacent_verticals[1]):
+        #if adjacent_verticals[0] == adjacent_verticals[1] and 2 not in adjacent_verticals and None not in adjacent_verticals:
             put.discard(adjacent_verticals[0])
-        if adjacent_horizontals[0] == adjacent_horizontals[1] and 2 not in adjacent_horizontals and None not in adjacent_horizontals:
+        
+        if same_numbers(adjacent_horizontals[0], adjacent_horizontals[1]):
+        #if adjacent_horizontals[0] == adjacent_horizontals[1] and 2 not in adjacent_horizontals and None not in adjacent_horizontals:
             put.discard(adjacent_horizontals[0])
-        if next_horizontals[0] == next_horizontals[1] and 2 not in next_horizontals and None not in next_horizontals:
+
+        if same_numbers(next_horizontals[0], next_horizontals[1]):
+        #if next_horizontals[0] == next_horizontals[1] and 2 not in next_horizontals and None not in next_horizontals:
             put.discard(next_horizontals[0])
-        if prev_horizontals[0] == prev_horizontals[1] and 2 not in prev_horizontals and None not in prev_horizontals:
+
+        if same_numbers(prev_horizontals[0], prev_horizontals[1]):
+        #if prev_horizontals[0] == prev_horizontals[1] and 2 not in prev_horizontals and None not in prev_horizontals:
             put.discard(prev_horizontals[0])
-        if next_verticals[0] == next_verticals[1] and 2 not in next_verticals and None not in next_verticals:
+
+        if same_numbers(next_verticals[0], next_verticals[1]):
+        #if next_verticals[0] == next_verticals[1] and 2 not in next_verticals and None not in next_verticals:
             put.discard(next_verticals[0])
-        if prev_verticals[0] == prev_verticals[1] and 2 not in prev_verticals and None not in prev_verticals:
+
+        if same_numbers(prev_verticals[0], prev_verticals[1]):
+        #if prev_verticals[0] == prev_verticals[1] and 2 not in prev_verticals and None not in prev_verticals:
             put.discard(prev_verticals[0])
+
         equals0, equals1 = False, False
         row = given_state.get_row(position[0])
         col = given_state.get_col(position[1])
+
         if given_state.get_row(position[0]).count(2) == 1:
             new_row1_0, new_row1_1 = row.copy(), row.copy()
             new_row1_0[position[1]], new_row1_1[position[1]] = 0, 1
@@ -250,6 +269,7 @@ class Takuzu(Problem):
                 equals0 = True
             if given_state.exists(new_row1_1, 0):
                 equals1 = True
+
         if given_state.get_col(position[1]).count(2) == 1:
             new_col1_0, new_col1_1 = col.copy(), col.copy()
             new_col1_0[position[0]], new_col1_1[position[0]] = 0, 1
@@ -257,14 +277,18 @@ class Takuzu(Problem):
                 equals0 = True
             if given_state.exists(new_col1_1, 1):
                 equals1 = True
+
         if equals0:
             put.discard(0)
+
         if equals1:
             put.discard(1)
+
         if 1 in put:
             result += ((position[0], position[1], 1),)
         if 0 in put:
             result += ((position[0], position[1], 0),)
+            
         return result
 
     def result(self, state: TakuzuState, action):
@@ -275,17 +299,13 @@ class Takuzu(Problem):
 
         copied_board = state.copy_board()
         copied_board[action[0]][action[1]] = action[2]
+
         return TakuzuState(Board(state.get_size(), copied_board))
 
     def goal_test(self, given_state: TakuzuState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas com uma sequência de números adjacentes."""
-        # nao ha linhas e colunas iguais 
-        # nao ha 3 numeros iguais seguidos horizontalmente ou verticalmente
-
-        #verificar q nao ha 2 no tabuleiro,
-        # nao há diferença maior q 1
 
         size = given_state.get_size()
 
@@ -306,10 +326,8 @@ class Takuzu(Problem):
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
-        # TODO
+        # relatório
         pass
-
-    # TODO: outros metodos da classe
 
 if __name__ == "__main__":
     # Ler tabuleiro do ficheiro 'i1.txt' (Figura 1):
