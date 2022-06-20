@@ -220,7 +220,6 @@ class Takuzu(Problem):
 
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-        
         self.initial = TakuzuState(board)
 
     def actions(self, given_state: TakuzuState):
@@ -238,11 +237,18 @@ class Takuzu(Problem):
         adjacent_verticals = given_state.adjacent_vertical_numbers(position[0], position[1])
         adjacent_horizontals = given_state.adjacent_horizontal_numbers(position[0], position[1])
         row = given_state.get_row(position[0])
-        col = given_state.get_col(position[1])
+        col = []
         row_one_count = row.count(1)
         row_zero_count = row.count(0)
-        col_one_count = col.count(1)
-        col_zero_count = col.count(0)
+        col_one_count = 0
+        col_zero_count = 0
+
+        for i in range(given_state.get_size()):
+            if given_state.state.board[i][position[1]] == 0:
+                col_zero_count += 1
+            elif given_state.state.board[i][position[1]] == 1:
+                col_one_count += 1
+            col += [given_state.state.board[i][position[1]]]
 
         def same_numbers(n1, n2):
             numbers = [n1, n2]
@@ -308,15 +314,14 @@ class Takuzu(Problem):
 
         iterate = tuple(put)
         for number in iterate:
-            if given_state.get_row(position[0]).count(2) == 1:
+            if row.count(2) == 1:
                 new_row = row.copy()
                 new_row[position[1]] = number
                 if given_state.exists(new_row, 0):
                     put.discard(number)
-            if given_state.get_col(position[1]).count(2) == 1:
-                new_col = col.copy()
-                new_col[position[0]] = number
-                if given_state.exists(new_col, 1):
+            if col.count(2) == 1:
+                col[position[0]] = number
+                if given_state.exists(col, 1):
                     put.discard(number)
 
         if put == {}:
