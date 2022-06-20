@@ -22,9 +22,10 @@ from search import (
 class Board:
     """Representação interna de um tabuleiro de Takuzu."""
 
-    def __init__(self, size, given_board):
+    def __init__(self, size, given_board, empty_positions):
         self.size = size
         self.board = given_board
+        self.empty_positions = empty_positions
 
     def __str__(self) -> str:
         to_print = ""
@@ -46,6 +47,9 @@ class Board:
 
     def get_size(self):
         return self.size
+
+    def get_empty_positions(self):
+        return self.empty_positions
 
     def get_row(self, row: int):
         return self.board[row]
@@ -135,6 +139,7 @@ class Board:
             > stdin.readline()
         """
         board = []
+        count = 0
         n = sys.stdin.readline()
         n = n.rstrip('\n')
         n = int(n)
@@ -145,8 +150,10 @@ class Board:
             values = line.split('\t')
             for j in range(n):
                 values[j] = int(values[j])
+                if values[j] == 2:
+                    count += 1
             board += [values]
-        return Board(n, board)
+        return Board(n, board, count)
 
     # TODO: outros metodos da classe
 
@@ -166,6 +173,9 @@ class TakuzuState:
 
     def get_size(self):
         return self.state.get_size()
+
+    def get_empty_positions(self):
+        return self.state.get_empty_positions()
 
     def change_number(self, row: int, col: int, number: int):
         self.state.change_number(row, col, number)
@@ -275,7 +285,7 @@ class Takuzu(Problem):
                     return {}
                 put.discard(0)
 
-        if (put == {}):
+        if put == {}:
             return put
 
         if same_numbers(adjacent_verticals[0], adjacent_verticals[1]):
@@ -296,7 +306,7 @@ class Takuzu(Problem):
         if same_numbers(prev_verticals[0], prev_verticals[1]):
             put.discard(prev_verticals[0])
 
-        iterate = list(put)
+        iterate = tuple(put)
         for number in iterate:
             if given_state.get_row(position[0]).count(2) == 1:
                 new_row = row.copy()
@@ -309,7 +319,7 @@ class Takuzu(Problem):
                 if given_state.exists(new_col, 1):
                     put.discard(number)
 
-        if (put == {}):
+        if put == {}:
             return put
 
         if 1 in put:
@@ -328,22 +338,14 @@ class Takuzu(Problem):
         copied_board = state.copy_board()
         copied_board[action[0]][action[1]] = action[2]
 
-        return TakuzuState(Board(state.get_size(), copied_board))
+        return TakuzuState(Board(state.get_size(), copied_board, state.get_empty_positions() - 1))
 
     def goal_test(self, given_state: TakuzuState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas com uma sequência de números adjacentes."""
 
-        size = given_state.get_size()
-
-        for i in range(size): 
-            line = given_state.get_row(i)
-            for j in range(size):
-                if line[j] == 2:
-                    return False
-
-        return True
+        return given_state.get_empty_positions() == 0
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
