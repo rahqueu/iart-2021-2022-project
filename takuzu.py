@@ -6,12 +6,9 @@
 # 99314 Raquel Cardoso
 # 99287 Miguel Eleutério
 
-from ctypes import pointer
-from multiprocessing.sharedctypes import Value
-from re import I
 import sys
-from time import get_clock_info
-from turtle import pos
+
+from numpy import size
 from search import (
     Problem,
     Node,
@@ -21,7 +18,6 @@ from search import (
     greedy_search,
     recursive_best_first_search,
 )
-from utils import vector_add
 
 class Board:
     """Representação interna de um tabuleiro de Takuzu."""
@@ -233,68 +229,88 @@ class Takuzu(Problem):
         adjacent_horizontals = given_state.adjacent_horizontal_numbers(position[0], position[1])
         row = given_state.get_row(position[0])
         col = given_state.get_col(position[1])
+        row_one_count = row.count(1)
+        row_zero_count = row.count(0)
+        col_one_count = col.count(1)
+        col_zero_count = col.count(0)
 
         def same_numbers(n1, n2):
             numbers = [n1, n2]
             if n1 == n2 and 2 not in numbers and None not in numbers:
                 return True
             return False
-        
+
+        if int(given_state.get_size()) % 2 != 0:
+            if row_one_count - given_state.get_size()//2 >= 1:
+                if [2, 2, 2] in row:
+                    return {}
+                put.discard(1)
+            if row_zero_count - given_state.get_size()//2 >= 1:
+                if [2, 2, 2] in row:
+                    return {}
+                put.discard(0)
+            if col_one_count - given_state.get_size()//2 >= 1:
+                if [2, 2, 2] in col:
+                    return {}
+                put.discard(1)
+            if col_zero_count - given_state.get_size()//2 >= 1:
+                if [2, 2, 2] in col:
+                    return {}
+                put.discard(0)
+        else:
+            if row_one_count == given_state.get_size()//2:
+                if [2, 2, 2] in row:
+                    return {}
+                put.discard(1)
+            if row_zero_count == given_state.get_size()//2:
+                if [2, 2, 2] in row:
+                    return {}
+                put.discard(0)
+            if col_one_count == given_state.get_size()//2:
+                if [2, 2, 2] in col:
+                    return {}
+                put.discard(1)
+            if col_zero_count == given_state.get_size()//2:
+                if [2, 2, 2] in col:
+                    return {}
+                put.discard(0)
+
+        if (put == {}):
+            return put
+
         if same_numbers(adjacent_verticals[0], adjacent_verticals[1]):
-        #if adjacent_verticals[0] == adjacent_verticals[1] and 2 not in adjacent_verticals and None not in adjacent_verticals:
             put.discard(adjacent_verticals[0])
         
         if same_numbers(adjacent_horizontals[0], adjacent_horizontals[1]):
-        #if adjacent_horizontals[0] == adjacent_horizontals[1] and 2 not in adjacent_horizontals and None not in adjacent_horizontals:
             put.discard(adjacent_horizontals[0])
 
         if same_numbers(next_horizontals[0], next_horizontals[1]):
-        #if next_horizontals[0] == next_horizontals[1] and 2 not in next_horizontals and None not in next_horizontals:
             put.discard(next_horizontals[0])
 
         if same_numbers(prev_horizontals[0], prev_horizontals[1]):
-        #if prev_horizontals[0] == prev_horizontals[1] and 2 not in prev_horizontals and None not in prev_horizontals:
             put.discard(prev_horizontals[0])
 
         if same_numbers(next_verticals[0], next_verticals[1]):
-        #if next_verticals[0] == next_verticals[1] and 2 not in next_verticals and None not in next_verticals:
             put.discard(next_verticals[0])
 
         if same_numbers(prev_verticals[0], prev_verticals[1]):
-        #if prev_verticals[0] == prev_verticals[1] and 2 not in prev_verticals and None not in prev_verticals:
             put.discard(prev_verticals[0])
 
-        if given_state.get_row(position[0]).count(2) == 1:
-            new_row1_0, new_row1_1 = row.copy(), row.copy()
-            new_row1_0[position[1]], new_row1_1[position[1]] = 0, 1
-            if given_state.exists(new_row1_0, 0):
-                put.discard(0)
-            if given_state.exists(new_row1_1, 0):
-                put.discard(1)
-            one_count = new_row1_0.count(1)
-            zero_count = int(given_state.get_size()) - one_count
-            if abs(one_count - zero_count) > 1:
-                put.discard(0)
-            one_count = new_row1_1.count(1)
-            zero_count = int(given_state.get_size()) - one_count
-            if abs(one_count - zero_count) > 1:
-                put.discard(1)
+        iterate = list(put)
+        for number in iterate:
+            if given_state.get_row(position[0]).count(2) == 1:
+                new_row = row.copy()
+                new_row[position[1]] = number
+                if given_state.exists(new_row, 0):
+                    put.discard(number)
+            if given_state.get_col(position[1]).count(2) == 1:
+                new_col = col.copy()
+                new_col[position[0]] = number
+                if given_state.exists(new_col, 1):
+                    put.discard(number)
 
-        if given_state.get_col(position[1]).count(2) == 1:
-            new_col1_0, new_col1_1 = col.copy(), col.copy()
-            new_col1_0[position[0]], new_col1_1[position[0]] = 0, 1
-            if given_state.exists(new_col1_0, 1):
-                put.discard(0)
-            if given_state.exists(new_col1_1, 1):
-                put.discard(1)
-            one_count = new_col1_0.count(1)
-            zero_count = int(given_state.get_size()) - one_count
-            if abs(one_count - zero_count) > 1:
-                put.discard(0)
-            one_count = new_col1_1.count(1)
-            zero_count = int(given_state.get_size()) - one_count
-            if abs(one_count - zero_count) > 1:
-                put.discard(1)
+        if (put == {}):
+            return put
 
         if 1 in put:
             result += ((position[0], position[1], 1),)
@@ -322,24 +338,9 @@ class Takuzu(Problem):
         size = given_state.get_size()
 
         for i in range(size): 
-            line1 = given_state.get_row(i)
-            col1 = given_state.get_col(i)
-            if (1,1,1) in line1 or (0,0,0) in line1 or 2 in line1:
-                return False
-            if (1,1,1) in col1 or (0,0,0) in col1 or 2 in col1:
-                return False
-            one_count = given_state.get_row(i).count(1)
-            zero_count = int(given_state.get_size()) - one_count
-            if abs(one_count - zero_count) > 1:
-                return False
-            one_count = given_state.get_col(i).count(1)
-            zero_count = int(given_state.get_size()) - one_count
-            if abs(one_count - zero_count) > 1:
-                return False
-            for j in range(i + 1, size):
-                line2 = given_state.get_row(j)
-                col2 = given_state.get_col(j)
-                if line1 == line2 or col1 == col2:  
+            line = given_state.get_row(i)
+            for j in range(size):
+                if line[j] == 2:
                     return False
 
         return True
