@@ -19,6 +19,8 @@ from search import (
     recursive_best_first_search,
 )
 
+guaranteed_actions = list()
+
 class Board:
     """Representação interna de um tabuleiro de Takuzu."""
 
@@ -74,6 +76,63 @@ class Board:
         respectivamente."""
         return (self.board[row][col - 1] if self.get_size() > col > 0 else None, 
         self.board[row][col + 1] if 0 <= col < (self.get_size() - 1) else None)
+
+    def filter_guaranteed(self):
+
+        global guaranteed_actions
+
+        def same_numbers(n1, n2):
+            numbers = [n1, n2]
+            if n1 == n2 and 2 not in numbers and None not in numbers:
+                return True
+            return False
+        
+        for i in range(self.get_size()):
+            one = False
+            zero = False
+            row = self.get_row(i)
+            row_one_count = row.count(1)
+            row_zero_count = row.count(0)
+
+            if int(self.get_size()) % 2 != 0:
+                if row_one_count - self.get_size()//2 >= 1:
+                    zero = True
+                if row_zero_count - self.get_size()//2 >= 1:
+                    one = True
+            else:
+                if row_one_count == self.get_size()//2:
+                    zero = True
+                if row_zero_count == self.get_size()//2:
+                    one = True
+
+            for j in range(self.get_size()):
+
+                if (self.get_number(i, j) == 2):
+
+                    if one:
+                        guaranteed_actions.append((i, j, 1), )
+                    elif zero:
+                        guaranteed_actions.append((i, j, 0), )
+                    else:
+                        next_horizontals = self.get_horizontal_values(i, j, 1)
+                        prev_horizontals = self.get_horizontal_values(i, j, 0)
+                        next_verticals = self.get_vertical_values(i, j, 1)
+                        prev_verticals = self.get_vertical_values(i, j, 0)
+                        adjacent_verticals = self.adjacent_vertical_numbers(i, j)
+                        adjacent_horizontals = self.adjacent_horizontal_numbers(i, j)
+
+                        if same_numbers(adjacent_verticals[0], adjacent_verticals[1]):
+                            guaranteed_actions.append((i, j, 1 - adjacent_verticals[0]), )
+                        elif same_numbers(adjacent_horizontals[0], adjacent_horizontals[1]):
+                            guaranteed_actions.append((i, j, 1 - adjacent_horizontals[0]), )
+                        elif same_numbers(next_horizontals[0], next_horizontals[1]):
+                            guaranteed_actions.append((i, j, 1 - next_horizontals[0]), )
+                        elif same_numbers(prev_horizontals[0], prev_horizontals[1]):
+                            guaranteed_actions.append((i, j, 1 - prev_horizontals[0]), )
+                        elif same_numbers(next_verticals[0], next_verticals[1]):
+                            guaranteed_actions.append((i, j, 1 - next_verticals[0]), )
+                        elif same_numbers(prev_verticals[0], prev_verticals[1]):
+                            guaranteed_actions.append((i, j, 1 - prev_verticals[0]), )
 
     def get_first_empty_position(self):
         for i in range(self.get_size()):
@@ -153,7 +212,11 @@ class Board:
                 if values[j] == 2:
                     count += 1
             board += [values]
-        return Board(n, board, count)
+
+        new_board = Board(n, board, count)
+        global guaranteed_actions
+        new_board.filter_guaranteed()
+        return new_board
 
     # TODO: outros metodos da classe
 
@@ -226,8 +289,16 @@ class Takuzu(Problem):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
 
-        position = given_state.get_state().get_first_empty_position()
         result = tuple()
+        global guaranteed_actions
+
+        if len(guaranteed_actions) > 0:
+            action = guaranteed_actions[0]
+            guaranteed_actions = guaranteed_actions[1:]
+            result += (action, )
+            return result
+
+        position = given_state.get_state().get_first_empty_position()
         put = {0, 1}
 
         next_horizontals = given_state.get_horizontal_values(position[0], position[1], 1)
@@ -259,40 +330,40 @@ class Takuzu(Problem):
         if int(given_state.get_size()) % 2 != 0:
             if row_one_count - given_state.get_size()//2 >= 1:
                 if [2, 2, 2] in row:
-                    return {}
+                    return ()
                 put.discard(1)
             if row_zero_count - given_state.get_size()//2 >= 1:
                 if [2, 2, 2] in row:
-                    return {}
+                    return ()
                 put.discard(0)
             if col_one_count - given_state.get_size()//2 >= 1:
                 if [2, 2, 2] in col:
-                    return {}
+                    return ()
                 put.discard(1)
             if col_zero_count - given_state.get_size()//2 >= 1:
                 if [2, 2, 2] in col:
-                    return {}
+                    return ()
                 put.discard(0)
         else:
             if row_one_count == given_state.get_size()//2:
                 if [2, 2, 2] in row:
-                    return {}
+                    return ()
                 put.discard(1)
             if row_zero_count == given_state.get_size()//2:
                 if [2, 2, 2] in row:
-                    return {}
+                    return ()
                 put.discard(0)
             if col_one_count == given_state.get_size()//2:
                 if [2, 2, 2] in col:
-                    return {}
+                    return ()
                 put.discard(1)
             if col_zero_count == given_state.get_size()//2:
                 if [2, 2, 2] in col:
-                    return {}
+                    return ()
                 put.discard(0)
 
         if put == {}:
-            return put
+            return ()
 
         if same_numbers(adjacent_verticals[0], adjacent_verticals[1]):
             put.discard(adjacent_verticals[0])
@@ -325,7 +396,7 @@ class Takuzu(Problem):
                     put.discard(number)
 
         if put == {}:
-            return put
+            return ()
 
         if 1 in put:
             result += ((position[0], position[1], 1),)
