@@ -6,6 +6,7 @@
 # 99314 Raquel Cardoso
 # 99287 Miguel Eleutério
 
+from calendar import c
 import sys
 
 from numpy import size
@@ -16,7 +17,7 @@ from search import (
     breadth_first_tree_search,
     depth_first_tree_search,
     greedy_search,
-    recursive_best_first_search,
+    compare_searchers
 )
 
 guaranteed_actions = list()
@@ -425,8 +426,16 @@ class Takuzu(Problem):
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
-        # relatório
-        pass
+        state = node.state
+        size = state.get_state().get_size()
+        count = 0
+
+        for i in range(size):
+            for j in range(size):
+                if state.get_state().get_number(i, j) == 2:
+                    count +=1
+
+        return count
 
 if __name__ == "__main__":
     # Ler tabuleiro do ficheiro 'i1.txt' (Figura 1):
