@@ -453,7 +453,7 @@ if __name__ == "__main__":
     # Criar uma instância de Takuzu:
     problem = Takuzu(board)
 
-    compare_searchers([problem], ["Searcher", "Resultado"], [depth_first_tree_search])
+    compare_searchers([problem], ["Searcher", "Resultado"], [astar_search])
 
     # Obter o nó solução usando a procura em profundidade:
     # goal_node = depth_first_tree_search(problem)
